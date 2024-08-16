@@ -1,7 +1,9 @@
 package dev.amrish.userservice.security.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import dev.amrish.userservice.modles.Role;
 import dev.amrish.userservice.modles.User;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,12 +12,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@JsonDeserialize
+@NoArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
     private String password;
     private String username;
     private boolean accountNonExpired;
-    private boolean acountNonLocked;
+    private boolean accountNonLocked;
     private boolean credentialsNonExpired;
     private boolean enabled;
     private List<GrantedAuthority> authorities;
@@ -24,7 +28,7 @@ public class CustomUserDetails implements UserDetails {
         this.password = user.getHashedPassword();
         this.username = user.getEmail();
         this.accountNonExpired = true;
-        this.acountNonLocked = true;
+        this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.enabled = true;
 
@@ -59,7 +63,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return acountNonLocked;
+        return accountNonLocked;
     }
 
     @Override
