@@ -1,5 +1,7 @@
 package dev.amrish.userservice.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.amrish.userservice.dtos.SendEmailDto;
 import dev.amrish.userservice.modles.Token;
 import dev.amrish.userservice.modles.User;
 
@@ -7,6 +9,7 @@ import dev.amrish.userservice.repositories.TokenRepository;
 import dev.amrish.userservice.repositories.UserRepository;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,16 +24,22 @@ public class UserServiceImpl implements  UserService{
     private UserRepository userRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private TokenRepository tokenRepository;
+    private KafkaTemplate<String, String> kafkaTemplate;
+    private ObjectMapper objectMapper;
 
 
     UserServiceImpl(
             UserRepository userRepository,
             TokenRepository tokenRepository,
-            BCryptPasswordEncoder bCryptPasswordEncoder
+            BCryptPasswordEncoder bCryptPasswordEncoder,
+            KafkaTemplate kafkaTemplate
     ){
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.kafkaTemplate = kafkaTemplate;
+        objectMapper = new ObjectMapper();
+
     }
 
     @Override
@@ -69,6 +78,23 @@ public class UserServiceImpl implements  UserService{
            user.setHashedPassword(bCryptPasswordEncoder.encode(password));
 
            userRepository.save(user);
+
+            SendEmailDto sendEmailDto = new SendEmailDto();
+            sendEmailDto.setFrom("test@gmail.com");
+            sendEmailDto.setTo("amrish@gmail.com");
+            sendEmailDto.setSubject("welcome");
+            sendEmailDto.setBody("welcome welcome welcome......");
+
+            String sendEmaildto = null;
+
+            try{
+                sendEmaildto = objectMapper.writeValueAsString(sendEmaildto);
+            }catch (Exception exception){
+                System.out.println("Something went wrong");
+            }
+
+            kafkaTemplate.send("sendEmail", sendEmaildto);
+
 
            return user;
 
